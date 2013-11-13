@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from scrapy.spider import BaseSpider
-from scrapy.selector import HtmlXPathSelector
+from scrapy.selector import Selector
 from scrapy.http import Request
 
 from florida_jobs.items import FloridaJobsItem
@@ -13,15 +13,15 @@ def _select_data(r, xpath):
 class florida_jobs_spider(BaseSpider):
     name = "florida_jobs"
     allowed_domains = ["b3.caspio.com"]
-    start_urls=["http://b3.caspio.com/dp.asp?appSession=550284237096963&RecordID=&PageID=2&PrevPageID=1&cpipage=1&CPISortType=&CPIorderBy="]
+    start_urls=["http://b3.caspio.com/dp.asp?appSession=268284288226221&RecordID=&PageID=2&PrevPageID=1&cpipage=1&CPISortType=&CPIorderBy="]
 
     def parse(self, response):
         
         self.log('A response from %s just arrived!' % response.url)
         
-        hxs = HtmlXPathSelector(response)
+        sel = Selector(response)
         items = []
-        rows = hxs.select("//tr[@class='cbResultSetEvenRow' or @class='cbResultSetOddRow']")
+        rows = sel.xpath("//tr[@class='cbResultSetEvenRow' or @class='cbResultSetOddRow']")
         for r in rows:
             item = FloridaJobsItem()
             item['name'] = _select_data(r, "td[1]/a/text()")
@@ -33,8 +33,8 @@ class florida_jobs_spider(BaseSpider):
             item['salary'] = _select_data(r, "td[7]/text()")
             yield item
 
-        next = hxs.select("//a[@class='cbResultSetNavigationLinks' and img[@alt='Next']]/@href").extract()
-        next10 = hxs.select("//a[@class='cbResultSetNavigationLinks' and img[@alt='Next10']]/@href").extract()
+        next = sel.xpath("//a[@class='cbResultSetNavigationLinks' and img[@alt='Next']]/@href").extract()
+        next10 = sel.xpath("//a[@class='cbResultSetNavigationLinks' and img[@alt='Next10']]/@href").extract()
         if next:
             url = "http://b3.caspio.com/" + next[0];
             print "next url: " + url
